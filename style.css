@@ -219,12 +219,20 @@ th {
 }
 
 tr.today {
-  background: #fff3e0;
+  background: linear-gradient(90deg, #fff3e0 0%, #ffe0b2 100%);
+  border-left: 4px solid var(--saffron);
+  border-right: 4px solid var(--saffron);
+  box-shadow: 0 2px 6px rgba(255, 153, 51, 0.2);
+  font-weight: 600;
+}
+
+tr.today td {
+  color: var(--maroon);
 }
 
 tr.today td:first-child {
   font-weight: 700;
-  color: var(--maroon);
+  font-size: 15px;
 }
 
 .pill {
@@ -232,9 +240,16 @@ tr.today td:first-child {
   background: var(--maroon);
   color: #fff;
   font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 20px;
-  margin-left: 6px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  margin-left: 8px;
+  font-weight: 600;
+}
+
+tr.today .pill {
+  background: var(--saffron);
+  color: #fff;
+  font-weight: 700;
 }
 
 .refresh-btn {
