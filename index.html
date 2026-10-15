@@ -45,8 +45,8 @@
 
   <script src="shared.js"></script>
   <script>
-    // Read the Apps Script URL from localStorage (set via admin panel setup)
-    const APPS_SCRIPT_URL = localStorage.getItem('appsScriptUrl') || '';
+    // Google Apps Script Web App URL (set once during initial deployment)
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwslRYq0JCgR4zC4P45tRm6q-47IxSZTXJpDVlgNbwNDeOwr3PY6V1x3mKDth_Azbfm/exec";
 
     const dateInput = document.getElementById('date');
     const headcountInput = document.getElementById('headcount');
@@ -77,10 +77,6 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      if (!APPS_SCRIPT_URL) {
-        showMessage('App is not set up yet. The admin needs to configure the Apps Script URL via admin.html.', 'error');
-        return;
-      }
 
       if (!TempleApp.isValidHeadcount(headcountInput.value)) {
         showMessage('Please enter at least 1 person.', 'error');
