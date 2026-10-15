@@ -18,7 +18,9 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background: linear-gradient(180deg, var(--cream) 0%, #fdeedd 100%);
+  background:
+    linear-gradient(180deg, rgba(58, 20, 14, 0.72) 0%, rgba(58, 20, 14, 0.82) 100%),
+    url("shiva-parvati-bg.jpg") center top / cover no-repeat fixed;
   color: var(--text);
   display: flex;
   justify-content: center;
@@ -28,11 +30,12 @@ body {
 .card {
   width: 100%;
   max-width: 440px;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.96);
   border-radius: 18px;
-  box-shadow: 0 10px 30px rgba(122, 31, 43, 0.12);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.35);
   padding: 28px 24px 32px;
   border-top: 6px solid var(--saffron);
+  backdrop-filter: blur(2px);
 }
 
 .temple-emoji {
@@ -227,6 +230,13 @@ tr.today td:first-child {
   color: var(--muted);
   font-size: 14px;
   padding: 20px 0;
+}
+
+.last-updated {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  margin: 10px 0 0;
 }
 
 .logout-link {

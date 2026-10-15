@@ -28,13 +28,14 @@
       </table>
       <div class="empty-state" id="emptyState" style="display:none;">No attendance marked yet.</div>
       <button type="button" class="refresh-btn" id="refreshBtn">Refresh</button>
+      <p class="last-updated" id="lastUpdated"></p>
       <a href="#" class="logout-link" id="logoutLink">Lock this page</a>
     </div>
   </div>
 
   <script>
     // PASTE your Google Apps Script Web App URL here (same one used in index.html)
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwslRYq0JCgR4zC4P45tRm6q-47IxSZTXJpDVlgNbwNDeOwr3PY6V1x3mKDth_Azbfm/exec";
+    const APPS_SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
     const STORAGE_KEY = 'temple_admin_pin';
 
     const pinSection = document.getElementById('pinSection');
@@ -43,6 +44,8 @@
     const pinMessage = document.getElementById('pinMessage');
     const summaryBody = document.getElementById('summaryBody');
     const emptyState = document.getElementById('emptyState');
+    const lastUpdated = document.getElementById('lastUpdated');
+    const refreshBtn = document.getElementById('refreshBtn');
 
     function todayStr() {
       const d = new Date();
@@ -63,7 +66,11 @@
         return;
       }
       try {
-        const res = await fetch(`${APPS_SCRIPT_URL}?action=summary&pin=${encodeURIComponent(pin)}`);
+        // Cache-busting timestamp + no-store: without this, mobile browsers
+        // (especially iOS Safari) can silently serve a stale cached response
+        // for the same URL, making "Refresh" look like it does nothing.
+        const url = `${APPS_SCRIPT_URL}?action=summary&pin=${encodeURIComponent(pin)}&t=${Date.now()}`;
+        const res = await fetch(url, { cache: 'no-store' });
         const data = await res.json();
 
         if (data.error) {
@@ -77,8 +84,12 @@
         pinSection.style.display = 'none';
         summarySection.style.display = 'block';
         renderSummary(data.data || []);
+        lastUpdated.textContent = 'Last updated: ' + new Date().toLocaleTimeString();
       } catch (err) {
         showPinMessage('Could not reach the server. Check your internet connection.');
+      } finally {
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = 'Refresh';
       }
     }
 
@@ -114,9 +125,13 @@
       if (e.key === 'Enter') document.getElementById('unlockBtn').click();
     });
 
-    document.getElementById('refreshBtn').addEventListener('click', () => {
+    refreshBtn.addEventListener('click', () => {
       const pin = localStorage.getItem(STORAGE_KEY);
-      if (pin) loadSummary(pin);
+      if (pin) {
+        refreshBtn.disabled = true;
+        refreshBtn.textContent = 'Refreshing...';
+        loadSummary(pin);
+      }
     });
 
     document.getElementById('logoutLink').addEventListener('click', (e) => {
