@@ -86,7 +86,7 @@
 
         if (data.error) {
           showPinMessage('Incorrect PIN. Please try again.');
-          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem(STORAGE_KEY_PIN);
           return;
         }
 
@@ -161,7 +161,7 @@
     });
 
     refreshBtn.addEventListener('click', () => {
-      const pin = localStorage.getItem(STORAGE_KEY);
+      const pin = localStorage.getItem(STORAGE_KEY_PIN);
       if (pin) {
         refreshBtn.disabled = true;
         refreshBtn.textContent = 'Refreshing...';
@@ -175,6 +175,7 @@
       summarySection.style.display = 'none';
       pinSection.style.display = 'block';
       pinInput.value = '';
+      setupSection.style.display = 'none'; // Keep setup hidden on logout
     });
 
     // Auto-show setup or PIN section on page load
