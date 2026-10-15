@@ -14,10 +14,32 @@ GitHub Pages website and a free Google Sheet as the "database".
 - **`apps-script/Code.gs`** — a tiny backend script (runs free on Google's
   servers) that saves every submission as a row in a Google Sheet, and
   answers the summary request for `admin.html`.
+- **`shared.js`** — small helper functions (date formatting, headcount
+  validation, etc.) used by both pages, kept in one place so they're easy to
+  test and can't drift out of sync with each other.
 - Every submission is also visible as a normal row in your Google Sheet, if
   staff ever want to open it directly.
 
 No database, no hosting bill, nothing to renew. Everything here is free.
+
+## Running the tests
+
+There's a small automated test suite in `tests/` that checks the core
+behavior (date defaults, headcount validation, the thank-you message text,
+the admin PIN check, and the per-day totals), so a future change is less
+likely to quietly break something.
+
+It needs nothing but Node.js (which you likely already have if you've ever
+run anything JavaScript-related) — no npm install, no extra packages:
+
+```bash
+cd devotees_attendance
+node --test tests/*.test.js
+```
+
+You should see something like `# pass 26` / `# fail 0` at the bottom. Run
+this after making any change to `shared.js`, `index.html`'s or
+`admin.html`'s logic, or `apps-script/Code.gs`, to make sure nothing broke.
 
 ## One-time setup (about 10 minutes)
 

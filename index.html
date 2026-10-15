@@ -43,6 +43,7 @@
     </div>
   </div>
 
+  <script src="shared.js"></script>
   <script>
     // PASTE your Google Apps Script Web App URL here (see README.md for setup steps)
     const APPS_SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
@@ -58,23 +59,14 @@
     const submitAnotherBtn = document.getElementById('submitAnotherBtn');
 
     // Default date to today, in the visitor's local timezone
-    function todayStr() {
-      const d = new Date();
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const dd = String(d.getDate()).padStart(2, '0');
-      return `${yyyy}-${mm}-${dd}`;
-    }
-    dateInput.value = todayStr();
-    dateInput.min = todayStr();
+    dateInput.value = TempleApp.todayStr();
+    dateInput.min = TempleApp.todayStr();
 
     document.getElementById('minusBtn').addEventListener('click', () => {
-      const v = Math.max(1, parseInt(headcountInput.value || '1', 10) - 1);
-      headcountInput.value = v;
+      headcountInput.value = TempleApp.clamp(parseInt(headcountInput.value, 10) - 1, 1, 50);
     });
     document.getElementById('plusBtn').addEventListener('click', () => {
-      const v = Math.min(50, parseInt(headcountInput.value || '1', 10) + 1);
-      headcountInput.value = v;
+      headcountInput.value = TempleApp.clamp(parseInt(headcountInput.value, 10) + 1, 1, 50);
     });
 
     function showMessage(text, type) {
@@ -90,18 +82,17 @@
         return;
       }
 
-      const headcount = parseInt(headcountInput.value, 10);
-      if (!headcount || headcount < 1) {
+      if (!TempleApp.isValidHeadcount(headcountInput.value)) {
         showMessage('Please enter at least 1 person.', 'error');
         return;
       }
 
-      const payload = {
+      const payload = TempleApp.buildAttendancePayload({
         date: dateInput.value,
-        headcount: headcount,
-        name: document.getElementById('name').value.trim(),
-        phone: document.getElementById('phone').value.trim(),
-      };
+        headcount: headcountInput.value,
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value,
+      });
 
       submitBtn.disabled = true;
       submitBtn.textContent = 'Submitting...';
@@ -118,11 +109,11 @@
         const data = await res.json();
 
         if (data.success) {
-          successText.textContent = `Attendance for ${headcount} ${headcount === 1 ? 'person' : 'people'} on ${dateInput.value} has been recorded. 🙏`;
+          successText.textContent = TempleApp.formatThankYouMessage(payload.headcount, payload.date);
           formView.style.display = 'none';
           successView.style.display = 'block';
           form.reset();
-          dateInput.value = todayStr();
+          dateInput.value = TempleApp.todayStr();
           headcountInput.value = 1;
         } else {
           showMessage(data.error || 'Something went wrong. Please try again.', 'error');
