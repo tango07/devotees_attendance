@@ -45,8 +45,8 @@
 
   <script src="shared.js"></script>
   <script>
-    // PASTE your Google Apps Script Web App URL here (see README.md for setup steps)
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwslRYq0JCgR4zC4P45tRm6q-47IxSZTXJpDVlgNbwNDeOwr3PY6V1x3mKDth_Azbfm/exec";
+    // Read the Apps Script URL from localStorage (set via admin panel setup)
+    const APPS_SCRIPT_URL = localStorage.getItem('appsScriptUrl') || '';
 
     const dateInput = document.getElementById('date');
     const headcountInput = document.getElementById('headcount');
@@ -77,8 +77,8 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      if (APPS_SCRIPT_URL.indexOf('PASTE_YOUR') === 0) {
-        showMessage('App is not fully set up yet — the admin needs to add the Apps Script URL. See README.md.', 'error');
+      if (!APPS_SCRIPT_URL) {
+        showMessage('App is not set up yet. The admin needs to configure the Apps Script URL via admin.html.', 'error');
         return;
       }
 

@@ -41,7 +41,7 @@ You should see something like `# pass 26` / `# fail 0` at the bottom. Run
 this after making any change to `shared.js`, `index.html`'s or
 `admin.html`'s logic, or `apps-script/Code.gs`, to make sure nothing broke.
 
-## One-time setup (about 10 minutes)
+## One-time setup (about 5 minutes)
 
 ### 1. Create the Google Sheet + backend script
 
@@ -70,14 +70,13 @@ this after making any change to `shared.js`, `index.html`'s or
 8. Copy the **Web app URL** it gives you (looks like
    `https://script.google.com/macros/s/XXXXXXX/exec`). You'll need it next.
 
-### 2. Connect the website to the script
+### 2. Connect the website to the script (via admin panel)
 
-1. Open `index.html` in this repo, find this line near the bottom, and
-   replace the placeholder with the URL you copied:
-   ```js
-   const APPS_SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
-   ```
-2. Do the exact same thing in `admin.html`.
+Open `admin.html` in your browser. On first load, you'll see a setup screen
+asking for the Apps Script URL. Paste the URL you copied from step 1.8, and
+click "Save URL & Continue". The app will save it in your browser's storage,
+so you only have to do this once. The same URL is automatically shared with
+`index.html`.
 
 ### 3. Put the code in your GitHub repo
 

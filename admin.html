@@ -12,7 +12,15 @@
     <h1>Kitchen Summary</h1>
     <p class="subtitle">Expected number of people per day, for food preparation planning.</p>
 
-    <div id="pinSection">
+    <div id="setupSection">
+      <p style="font-size: 14px; color: #666; margin-bottom: 16px;"><strong>First time setup:</strong> Paste your Google Apps Script Web App URL below (from README.md step 1.8).</p>
+      <label for="setupUrl" style="display: block; margin-bottom: 6px; font-weight: 500;">Apps Script URL</label>
+      <input type="text" id="setupUrl" placeholder="https://script.google.com/macros/s/..." style="width: 100%; padding: 10px; margin-bottom: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; font-family: monospace;" />
+      <button type="button" class="primary" id="setupBtn" style="width: 100%;">Save URL & Continue</button>
+      <div class="message" id="setupMessage"></div>
+    </div>
+
+    <div id="pinSection" style="display:none;">
       <label for="pin">Enter staff PIN</label>
       <input type="password" id="pin" inputmode="numeric" placeholder="PIN" />
       <button type="button" class="primary" id="unlockBtn">Unlock</button>
@@ -35,10 +43,13 @@
 
   <script src="shared.js"></script>
   <script>
-    // PASTE your Google Apps Script Web App URL here (same one used in index.html)
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwslRYq0JCgR4zC4P45tRm6q-47IxSZTXJpDVlgNbwNDeOwr3PY6V1x3mKDth_Azbfm/exec";
-    const STORAGE_KEY = 'temple_admin_pin';
+    const STORAGE_KEY_PIN = 'temple_admin_pin';
+    const STORAGE_KEY_URL = 'appsScriptUrl';
 
+    const setupSection = document.getElementById('setupSection');
+    const setupUrl = document.getElementById('setupUrl');
+    const setupBtn = document.getElementById('setupBtn');
+    const setupMessage = document.getElementById('setupMessage');
     const pinSection = document.getElementById('pinSection');
     const summarySection = document.getElementById('summarySection');
     const pinInput = document.getElementById('pin');
@@ -48,14 +59,21 @@
     const lastUpdated = document.getElementById('lastUpdated');
     const refreshBtn = document.getElementById('refreshBtn');
 
+    let APPS_SCRIPT_URL = localStorage.getItem(STORAGE_KEY_URL) || '';
+
+    function showSetupMessage(text, isError = false) {
+      setupMessage.textContent = text;
+      setupMessage.className = `message ${isError ? 'error' : 'success'}`;
+    }
+
     function showPinMessage(text) {
       pinMessage.textContent = text;
       pinMessage.className = 'message error';
     }
 
     async function loadSummary(pin) {
-      if (APPS_SCRIPT_URL.indexOf('PASTE_YOUR') === 0) {
-        showPinMessage('App is not fully set up yet — the admin needs to add the Apps Script URL. See README.md.');
+      if (!APPS_SCRIPT_URL) {
+        showPinMessage('Apps Script URL not configured. Go back and set it up first.');
         return;
       }
       try {
@@ -73,7 +91,7 @@
         }
 
         // Correct PIN — remember it and show the dashboard
-        localStorage.setItem(STORAGE_KEY, pin);
+        localStorage.setItem(STORAGE_KEY_PIN, pin);
         pinSection.style.display = 'none';
         summarySection.style.display = 'block';
         renderSummary(data.data || []);
@@ -106,6 +124,29 @@
       });
     }
 
+    setupBtn.addEventListener('click', () => {
+      const url = setupUrl.value.trim();
+      if (!url) {
+        showSetupMessage('Please enter the Apps Script URL.', true);
+        return;
+      }
+      if (!url.startsWith('https://script.google.com')) {
+        showSetupMessage('URL should start with https://script.google.com', true);
+        return;
+      }
+      localStorage.setItem(STORAGE_KEY_URL, url);
+      APPS_SCRIPT_URL = url;
+      showSetupMessage('URL saved! Redirecting to PIN screen...', false);
+      setTimeout(() => {
+        setupSection.style.display = 'none';
+        pinSection.style.display = 'block';
+      }, 800);
+    });
+
+    setupUrl.addEventListener('keyup', (e) => {
+      if (e.key === 'Enter') setupBtn.click();
+    });
+
     document.getElementById('unlockBtn').addEventListener('click', () => {
       const pin = pinInput.value.trim();
       if (!pin) {
@@ -130,18 +171,27 @@
 
     document.getElementById('logoutLink').addEventListener('click', (e) => {
       e.preventDefault();
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_KEY_PIN);
       summarySection.style.display = 'none';
       pinSection.style.display = 'block';
       pinInput.value = '';
     });
 
-    // Auto-unlock if PIN already remembered on this device
+    // Auto-show setup or PIN section on page load
     window.addEventListener('DOMContentLoaded', () => {
-      const savedPin = localStorage.getItem(STORAGE_KEY);
-      if (savedPin) {
-        pinInput.value = savedPin;
-        loadSummary(savedPin);
+      if (!APPS_SCRIPT_URL) {
+        // First time: show setup screen
+        setupSection.style.display = 'block';
+        pinSection.style.display = 'none';
+      } else {
+        // URL already saved; check if PIN is remembered
+        setupSection.style.display = 'none';
+        pinSection.style.display = 'block';
+        const savedPin = localStorage.getItem(STORAGE_KEY_PIN);
+        if (savedPin) {
+          pinInput.value = savedPin;
+          loadSummary(savedPin);
+        }
       }
     });
   </script>
