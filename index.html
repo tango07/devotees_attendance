@@ -8,30 +8,39 @@
 </head>
 <body>
   <div class="card">
-    <span class="temple-emoji">🛕</span>
-    <h1>Mark Your Attendance</h1>
-    <p class="subtitle">Let us know you're coming for darshan &amp; meal, so we can prepare just the right amount of food. 🙏</p>
+    <div id="formView">
+      <span class="temple-emoji">🛕</span>
+      <h1>Mark Your Attendance</h1>
+      <p class="subtitle">Let us know you're coming for darshan &amp; meal, so we can prepare just the right amount of food. 🙏</p>
 
-    <form id="attendanceForm">
-      <label for="date">Date of visit</label>
-      <input type="date" id="date" required />
+      <form id="attendanceForm">
+        <label for="date">Date of visit</label>
+        <input type="date" id="date" required />
 
-      <label for="headcount">Number of people (including you)</label>
-      <div class="headcount-row">
-        <button type="button" class="stepper-btn" id="minusBtn" aria-label="Decrease">−</button>
-        <input type="number" id="headcount" min="1" max="50" value="1" required />
-        <button type="button" class="stepper-btn" id="plusBtn" aria-label="Increase">+</button>
-      </div>
+        <label for="headcount">Number of people (including you)</label>
+        <div class="headcount-row">
+          <button type="button" class="stepper-btn" id="minusBtn" aria-label="Decrease">−</button>
+          <input type="number" id="headcount" min="1" max="50" value="1" required />
+          <button type="button" class="stepper-btn" id="plusBtn" aria-label="Increase">+</button>
+        </div>
 
-      <label for="name">Name <span class="optional">(optional)</span></label>
-      <input type="text" id="name" placeholder="Your name" autocomplete="name" />
+        <label for="name">Name <span class="optional">(optional)</span></label>
+        <input type="text" id="name" placeholder="Your name" autocomplete="name" />
 
-      <label for="phone">Phone number <span class="optional">(optional)</span></label>
-      <input type="tel" id="phone" placeholder="For contact if needed" autocomplete="tel" />
+        <label for="phone">Phone number <span class="optional">(optional)</span></label>
+        <input type="tel" id="phone" placeholder="For contact if needed" autocomplete="tel" />
 
-      <button type="submit" class="primary" id="submitBtn">Submit Attendance</button>
-      <div class="message" id="message"></div>
-    </form>
+        <button type="submit" class="primary" id="submitBtn">Submit Attendance</button>
+        <div class="message" id="message"></div>
+      </form>
+    </div>
+
+    <div id="successView" class="success-view" style="display:none;">
+      <span class="success-check">✅</span>
+      <h1>Thank You!</h1>
+      <p class="success-text" id="successText"></p>
+      <button type="button" class="primary" id="submitAnotherBtn">Submit Another Entry</button>
+    </div>
   </div>
 
   <script>
@@ -43,6 +52,10 @@
     const form = document.getElementById('attendanceForm');
     const messageEl = document.getElementById('message');
     const submitBtn = document.getElementById('submitBtn');
+    const formView = document.getElementById('formView');
+    const successView = document.getElementById('successView');
+    const successText = document.getElementById('successText');
+    const submitAnotherBtn = document.getElementById('submitAnotherBtn');
 
     // Default date to today, in the visitor's local timezone
     function todayStr() {
@@ -105,7 +118,9 @@
         const data = await res.json();
 
         if (data.success) {
-          showMessage(`Thank you! Attendance for ${headcount} ${headcount === 1 ? 'person' : 'people'} on ${dateInput.value} has been recorded. 🙏`, 'success');
+          successText.textContent = `Attendance for ${headcount} ${headcount === 1 ? 'person' : 'people'} on ${dateInput.value} has been recorded. 🙏`;
+          formView.style.display = 'none';
+          successView.style.display = 'block';
           form.reset();
           dateInput.value = todayStr();
           headcountInput.value = 1;
@@ -118,6 +133,12 @@
         submitBtn.disabled = false;
         submitBtn.textContent = 'Submit Attendance';
       }
+    });
+
+    submitAnotherBtn.addEventListener('click', () => {
+      successView.style.display = 'none';
+      formView.style.display = 'block';
+      messageEl.className = 'message';
     });
   </script>
 </body>

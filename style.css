@@ -161,6 +161,31 @@ button.primary:disabled {
   color: var(--error);
 }
 
+.success-view {
+  text-align: center;
+}
+
+.success-check {
+  font-size: 56px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.success-view h1 {
+  margin-bottom: 10px;
+}
+
+.success-text {
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0 0 26px;
+}
+
+.success-view .primary {
+  margin-top: 0;
+}
+
 .footer-link {
   text-align: center;
   margin-top: 22px;
