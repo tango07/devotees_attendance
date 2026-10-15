@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kitchen Summary — Temple Attendance</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="card">
+    <span class="temple-emoji">🍲</span>
+    <h1>Kitchen Summary</h1>
+    <p class="subtitle">Expected number of people per day, for food preparation planning.</p>
+
+    <div id="pinSection">
+      <label for="pin">Enter staff PIN</label>
+      <input type="password" id="pin" inputmode="numeric" placeholder="PIN" />
+      <button type="button" class="primary" id="unlockBtn">Unlock</button>
+      <div class="message" id="pinMessage"></div>
+    </div>
+
+    <div id="summarySection" style="display:none;">
+      <table id="summaryTable">
+        <thead>
+          <tr><th>Date</th><th>People</th><th>Entries</th></tr>
+        </thead>
+        <tbody id="summaryBody"></tbody>
+      </table>
+      <div class="empty-state" id="emptyState" style="display:none;">No attendance marked yet.</div>
+      <button type="button" class="refresh-btn" id="refreshBtn">Refresh</button>
+      <a href="#" class="logout-link" id="logoutLink">Lock this page</a>
+    </div>
+  </div>
+
+  <script>
+    // PASTE your Google Apps Script Web App URL here (same one used in index.html)
+    const APPS_SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+    const STORAGE_KEY = 'temple_admin_pin';
+
+    const pinSection = document.getElementById('pinSection');
+    const summarySection = document.getElementById('summarySection');
+    const pinInput = document.getElementById('pin');
+    const pinMessage = document.getElementById('pinMessage');
+    const summaryBody = document.getElementById('summaryBody');
+    const emptyState = document.getElementById('emptyState');
+
+    function todayStr() {
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function showPinMessage(text) {
+      pinMessage.textContent = text;
+      pinMessage.className = 'message error';
+    }
+
+    async function loadSummary(pin) {
+      if (APPS_SCRIPT_URL.indexOf('PASTE_YOUR') === 0) {
+        showPinMessage('App is not fully set up yet — the admin needs to add the Apps Script URL. See README.md.');
+        return;
+      }
+      try {
+        const res = await fetch(`${APPS_SCRIPT_URL}?action=summary&pin=${encodeURIComponent(pin)}`);
+        const data = await res.json();
+
+        if (data.error) {
+          showPinMessage('Incorrect PIN. Please try again.');
+          localStorage.removeItem(STORAGE_KEY);
+          return;
+        }
+
+        // Correct PIN — remember it and show the dashboard
+        localStorage.setItem(STORAGE_KEY, pin);
+        pinSection.style.display = 'none';
+        summarySection.style.display = 'block';
+        renderSummary(data.data || []);
+      } catch (err) {
+        showPinMessage('Could not reach the server. Check your internet connection.');
+      }
+    }
+
+    function renderSummary(rows) {
+      summaryBody.innerHTML = '';
+      const today = todayStr();
+
+      if (!rows.length) {
+        emptyState.style.display = 'block';
+        return;
+      }
+      emptyState.style.display = 'none';
+
+      rows.forEach((row) => {
+        const tr = document.createElement('tr');
+        if (row.date === today) tr.className = 'today';
+        const todayPill = row.date === today ? '<span class="pill">Today</span>' : '';
+        tr.innerHTML = `<td>${row.date}${todayPill}</td><td>${row.people}</td><td>${row.submissions}</td>`;
+        summaryBody.appendChild(tr);
+      });
+    }
+
+    document.getElementById('unlockBtn').addEventListener('click', () => {
+      const pin = pinInput.value.trim();
+      if (!pin) {
+        showPinMessage('Please enter the staff PIN.');
+        return;
+      }
+      loadSummary(pin);
+    });
+
+    pinInput.addEventListener('keyup', (e) => {
+      if (e.key === 'Enter') document.getElementById('unlockBtn').click();
+    });
+
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+      const pin = localStorage.getItem(STORAGE_KEY);
+      if (pin) loadSummary(pin);
+    });
+
+    document.getElementById('logoutLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      localStorage.removeItem(STORAGE_KEY);
+      summarySection.style.display = 'none';
+      pinSection.style.display = 'block';
+      pinInput.value = '';
+    });
+
+    // Auto-unlock if PIN already remembered on this device
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedPin = localStorage.getItem(STORAGE_KEY);
+      if (savedPin) {
+        pinInput.value = savedPin;
+        loadSummary(savedPin);
+      }
+    });
+  </script>
+</body>
+</html>
